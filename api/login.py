@@ -3,26 +3,20 @@ import json
 import bcrypt
 from supabase import create_client, Client
 
-# -----------------------------
-# Supabase Client Setup
-# -----------------------------
-SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-# -----------------------------
-# Login Handler
-# -----------------------------
 def handler(request):
+    # Supabase client inside handler ensures environment vars exist
+    SUPABASE_URL = os.environ.get("SUPABASE_URL")
+    SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return {"statusCode": 500, "body": json.dumps({"message": "Supabase credentials missing"})}
+
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
     if request.method != "POST":
         return {"statusCode": 405, "body": json.dumps({"message": "Method not allowed"})}
 
     try:
-        body = request.body.decode() 
+        body = request.body.decode()
         data = json.loads(body)
         username = data.get("username")
         password = data.get("password")
