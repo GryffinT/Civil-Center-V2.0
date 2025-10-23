@@ -1,10 +1,14 @@
 from supabase import create_client, Client
 import bcrypt
 import json
-
 import os
-url = os.environ.get("https://vjnzkzoaxtkqhtsaaxzl.supabase.co")
-key = os.environ.get("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbnprem9heHRrcWh0c2FheHpsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTk1Mzg1NywiZXhwIjoyMDc1NTI5ODU3fQ.ZKfkTYHbyYB51b77PtVfVdv5RmAKRpJ17z-QqxaKuPY")
+
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
+
+if not url or not key:
+    raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in environment variables")
+
 supabase: Client = create_client(url, key)
 
 def handler(request):
