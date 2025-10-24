@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "supabase": "^2.53.6"
-  }
-}
