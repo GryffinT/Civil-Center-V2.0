@@ -25,12 +25,12 @@ def handler(request):
             return {"statusCode": 400, "body": json.dumps({"message": "Missing fields"})}
 
         response = supabase.table("users").select("*").eq("username", username).execute()
-        user_data = response.data if hasattr(response, "data") else response.get("data")
 
-        if not user_data:
+        user_list = response.data
+        if not user_list or len(user_list) == 0:
             return {"statusCode": 401, "body": json.dumps({"message": "Invalid credentials"})}
-
-        user = user_data[0]
+        user = user_list[0]
+        
         hashed_password = user.get("password")
         if not hashed_password:
             return {"statusCode": 500, "body": json.dumps({"message": "Stored password missing"})}
