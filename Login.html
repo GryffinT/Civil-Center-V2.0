@@ -1,66 +1,87 @@
 <!DOCTYPE html>
-
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Civil Center</title>
-    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="site-background" style="padding: 0; margin: 0; overflow-x: hidden;text-align: center;">
-    <div style="background-color: white; border-radius: 15px; width:700px; height:800px; margin-top: 500px;box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);margin: auto; margin-top: 20px; margin-bottom: 20px">
-      <h1 style="padding-top: 5%;"><strong>Civil</strong><sub>Center</sub></h1>
-      <h2 style="font-size: 10px; margin-top: -20px;">Because democracy isn't a shouting match.</h2>
-      <br>
-      <hr style="width: 650px; margin: 0 auto; border: 1px solid black;">
+  <body
+    class="site-background"
+    style="padding: 0; margin: 0; overflow-x: hidden; text-align: center"
+  >
+    <div
+      style="
+        background-color: white;
+        border-radius: 15px;
+        width: 700px;
+        height: 800px;
+        margin-top: 500px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        margin: auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      "
+    >
+      <h1 style="padding-top: 5%">
+        <strong>Civil</strong><sub>Center</sub>
+      </h1>
+      <h2 style="font-size: 10px; margin-top: -20px">
+        Because democracy isn't a shouting match.
+      </h2>
+      <br />
+      <hr
+        style="width: 650px; margin: 0 auto; border: 1px solid black"
+      />
       <form id="login-form">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
+        <input type="text" name="username" placeholder="Username" required />
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
         <button type="submit">Login</button>
       </form>
+
+      <p id="response-text" style="margin-top: 20px; font-weight: bold;"></p>
+
       <script>
-      document.getElementById("login-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        const data = {
-          username: e.target.username.value,
-          password: e.target.password.value
-        };
+            // Collect the form data
+            const data = {
+              username: e.target.username.value,
+              password: e.target.password.value,
+            };
 
-        try {
-          const res = await fetch("/api/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            try {
+              // Call your simple Vercel Python test
+              const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+              });
+
+              // The test returns plain text ("Hello world"), not JSON
+              const text = await res.text();
+
+              document.getElementById("response-text").innerText =
+                "Server says: " + text;
+
+              if (!res.ok) {
+                alert("Server returned an error (status " + res.status + ")");
+              }
+            } catch (networkError) {
+              console.error("Network error:", networkError);
+              alert("Network error — cannot reach server");
+            }
           });
-
-          let result;
-          try {
-            result = await res.json();
-          } catch (jsonError) {
-            console.error("Failed to parse JSON:", jsonError);
-            const text = await res.text();
-            console.error("Server response:", text);
-            alert("Server error — see console for details");
-            return;
-          }
-
-          if (res.ok) {
-            window.location.href = "/Home.html";
-          } else {
-            alert(result.message || "Login failed");
-          }
-        } catch (networkError) {
-          console.error("Network error:", networkError);
-          alert("Network error — cannot reach server");
-        }
-      });
       </script>
     </div>
   </body>
 </html>
-
-
-
-
 
