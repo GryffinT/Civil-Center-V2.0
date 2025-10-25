@@ -1,9 +1,8 @@
-import os
-import json
-import bcrypt
-from supabase import create_client, Client
-
 def handler(request):
+    import os
+    import json
+    import bcrypt
+    from supabase import create_client, Client
     # Supabase client inside handler ensures environment vars exist
     SUPABASE_URL = os.environ.get("SUPABASE_URL")
     SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
@@ -30,7 +29,7 @@ def handler(request):
         if not user_list or len(user_list) == 0:
             return {"statusCode": 401, "body": json.dumps({"message": "Invalid credentials"})}
         user = user_list[0]
-        
+
         hashed_password = user.get("password")
         if not hashed_password:
             return {"statusCode": 500, "body": json.dumps({"message": "Stored password missing"})}
