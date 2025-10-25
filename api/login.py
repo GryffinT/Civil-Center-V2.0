@@ -1,2 +1,7 @@
 def handler(request):
-    return {"statusCode": 200, "body": "Hello world"}
+    print("Function executed!")
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "text/plain"},
+        "body": "Hello world"
+    }
