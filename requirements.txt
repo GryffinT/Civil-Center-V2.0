@@ -1,3 +1,0 @@
-bcrypt==4.2.0
-supabase
-typing-extensions==4.13.2
