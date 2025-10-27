@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Civil Center</title>
+        <link rel="stylesheet" href="/styles.css"> 
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body class="site-background" style="padding:0; margin:0; overflow-x:hidden; font-family: 'Inter', sans-serif;">
+        
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <div class="indented">
+            <h1 style="margin-top:1%; font-size:50px; margin-bottom:5px;">
+                <span class="top-bar-span"><strong>Civil<strong><sub>Center</sub></strong></span>
+            </h1>
+            <div style="width:100vw; padding-bottom:5%; display:flex; justify-content:left; gap:20px;">
+                <button class="fancybtn" onclick="window.location.href='/Login.html'">Signout</button>
+                <button class="fancybtn" onclick="window.location.href='/Mission.html'">My Centers</button>
+                <button class="fancybtn" onclick="window.location.href='/Team.html'">Public Centers</button>
+                <button class="fancybtn" onclick="window.location.href='/Team.html'">My Profile</button>
+            </div>
+            </div>
+        </div>
+
+        <div style="width:100%;margin-top:5%; height:20%; background-image: linear-gradient(to bottom, rgb(234, 245, 255), white); text-align:center;">
+            <h1 style="padding-top:150px;">Engage in civil, meaningful dialogue.</h1>
+            <p style="padding-top:20px; font-weight:100; margin-left:600px; margin-right:600px;">
+            Join a community dedicated to respectful discourse on the issues that matter. Share perspectives, learn from others, and work together towards change.
+            </p>
+            <div style="display:flex; justify-content:center; gap:30px; margin-top:20px;">
+            <button id="create" class="shiny interactive" style="background-color:black; color:silver; border-radius:10px; height:37.25px; width:150px;">Create a Center</button>            
+            <button id="join" class="shiny interactive" style="background-color:black; color:silver; border-radius:10px; height:37.25px; width:150px;">Join a Center</button>
+            </div>
+        </div>
+
+        <div class="dark_content" style="margin-top:300px; display:flex; flex-direction:column; align-items:center;">
+            <h1>Your Centers</h1>
+            <div id="centers-list" style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-top:20px;"></div>
+        </div>
+
+        <script>
+        async function renderUserCenters() {
+        try {
+            const userId = supabase.auth.getSession(); 
+            if (!userId) {
+            document.getElementById("centers-list").innerHTML = "<p>Please log in to see your centers.</p>";
+            return;
+            }
+
+            // Call the serverless endpoint
+            const response = await fetch("/api/get-user-centers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId })
+            });
+
+            const data = await response.json();
+            const centersList = document.getElementById("centers-list");
+            centersList.innerHTML = ""; 
+            if (!data.centers || data.centers.length === 0) {
+            centersList.innerHTML = "<p>You have no centers yet.</p>";
+            return;
+            }
+
+            data.centers.forEach(center => {
+            const card = document.createElement("div");
+            card.style.border = "1px solid #ccc";
+            card.style.borderRadius = "12px";
+            card.style.padding = "15px";
+            card.style.width = "250px";
+            card.style.textAlign = "center";
+            card.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+            card.style.backgroundColor = "#f9f9f9";
+
+            card.innerHTML = `
+                <h3>${center.name}</h3>
+                <p>${center.description || "No description"}</p>
+                <p><strong>Members:</strong> ${center.members || 0}</p>
+            `;
+            centersList.appendChild(card);
+            });
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("centers-list").innerHTML = "<p>Error loading centers.</p>";
+        }
+        }
+
+        renderUserCenters();
+        </script>
+
+
+        <div id="create-modal">
+            <div class="modal-content">
+            <h3>Create a New Center</h3>
+            <form id="create-center-form">
+                <input type="text" name="name" placeholder="Center Name" required />
+                <input type="password" name="password" placeholder="Center Password" required />
+                <textarea name="description" placeholder="Description" required></textarea>
+                <button type="submit" class="shiny interactive">Create</button>
+            </form>
+            <span id="close-modal">&times;</span>
+            </div>
+        </div>
+        <!-- Join Center Modal -->
+        <div id="join-modal">
+        <div class="modal-content">
+            <h3>Join a Center</h3>
+            <form id="join-center-form">
+            <input style="width: 95%;" type="password" name="password" placeholder="Center Password" required />
+            <button type="submit" class="shiny interactive">Join</button>
+            </form>
+            <span id="close-join-modal">&times;</span>
+        </div>
+        </div>
+    <script>
+    // ---------- Elements ----------
+    const createBtn = document.getElementById("create");
+    const createModal = document.getElementById("create-modal");
+    const closeCreateModal = document.getElementById("close-modal");
+    const createForm = document.getElementById("create-center-form");
+
+    const joinBtn = document.getElementById("join");
+    const joinModal = document.getElementById("join-modal");
+    const closeJoinModal = document.getElementById("close-join-modal");
+    const joinForm = document.getElementById("join-center-form");
+
+    // ---------- Create Center Modal ----------
+    createBtn.addEventListener("click", () => createModal.style.display = "flex");
+    closeCreateModal.addEventListener("click", () => createModal.style.display = "none");
+    window.addEventListener("click", e => { if (e.target === createModal) createModal.style.display = "none"; });
+
+    createForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = {
+        name: e.target.name.value,
+        password: e.target.password.value,
+        description: e.target.description.value
+        };
+
+        try {
+        const res = await fetch("/api/create-center", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.message);
+
+        alert(json.message);
+        createModal.style.display = "none";
+        createForm.reset();
+        } catch (err) {
+        console.error(err);
+        alert("Error creating center: " + err.message);
+        }
+    });
+
+    // ---------- Join Center Modal ----------
+    joinBtn.addEventListener("click", () => joinModal.style.display = "flex");
+    closeJoinModal.addEventListener("click", () => joinModal.style.display = "none");
+    window.addEventListener("click", e => { if (e.target === joinModal) joinModal.style.display = "none"; });
+
+    joinForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+            alert("Unable to fetch user session. Please log in.");
+            return;
+        }
+        const userId = session.user.id;
+
+        const data = {
+            userId,
+            password: e.target.password.value // only password now
+        };
+
+        try {
+            const res = await fetch("/api/join-center", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message);
+
+            alert(json.message);
+            joinModal.style.display = "none";
+            joinForm.reset();
+        } catch (err) {
+            console.error(err);
+            alert("Error joining center: " + err.message);
+        }
+    });
+
+    </script>
+    </body>
+</html>

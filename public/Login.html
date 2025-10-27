@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Civil Center - Login</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="container"></div>
+    <div class="notification" id="notification"></div>
+    <script>
+      let mode = "login";
+
+      function showNotification(message, isError=false) {
+        const notif = document.getElementById("notification");
+        notif.textContent = message;
+        notif.classList.toggle("error", isError);
+        notif.classList.add("show");
+        setTimeout(() => notif.classList.remove("show"), 3000);
+      }
+
+      function renderForm() {
+        const container = document.getElementById("container");
+        container.innerHTML = `
+          <div class="panel" id="panel">
+            <h2>${
+              mode==="login" ? "Login" :
+              mode==="signup" ? "Sign Up" :
+              "Forgot Password"
+            }</h2>
+
+            <form id="auth-form" class="form">
+              ${mode!=="forgot" ? `<input type="text" name="username" placeholder="Username" required />` : ""}
+              <input type="email" name="email" placeholder="Email" required />
+              ${mode!=="forgot" ? `<input type="password" name="password" placeholder="Password" required />` : ""}
+              <button type="submit">${
+                mode==="login" ? "Login" :
+                mode==="signup" ? "Create Account" :
+                "Send Reset Link"
+              }</button>
+            </form>
+
+            <p class="switch" id="switch-mode">
+              ${
+                mode==="login" ? "Don't have an account? Sign up" :
+                mode==="signup" ? "Already have an account? Log in" :
+                "Back to login"
+              }
+            </p>
+
+            ${mode==="login" ? '<p class="switch" id="forgot-pass">Forgot Password?</p>' : ""}
+          </div>
+        `;
+
+        document.getElementById("auth-form").onsubmit = handleSubmit;
+        document.getElementById("switch-mode").onclick = () => {
+          mode = mode==="login" ? "signup" : mode==="signup" ? "login" : "login";
+          animateTransition();
+        };
+        const forgot = document.getElementById("forgot-pass");
+        if (forgot) forgot.onclick = () => { mode="forgot"; animateTransition(); };
+      }
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target));
+
+        try {
+          const endpoint =
+            mode==="login" ? "/api/login" :
+            mode==="signup" ? "/api/signup" :
+            "/api/forgot-password";
+
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.message || "Something went wrong");
+
+          showNotification(json.message, false);
+
+          if (mode==="login") {
+            setTimeout(() => { window.location.href="/Home.html"; }, 1500);
+          }
+        } catch(err) {
+          showNotification(err.message, true);
+        }
+      }
+
+      function animateTransition() {
+        const panel = document.getElementById("panel");
+        if (!panel) return;
+        panel.style.opacity="0"; panel.style.transform="scale(0.9)";
+        setTimeout(() => {
+          renderForm();
+          const newPanel = document.getElementById("panel");
+          newPanel.style.opacity="0"; newPanel.style.transform="scale(0.9)";
+          setTimeout(() => { newPanel.style.transition="all 0.4s ease"; newPanel.style.opacity="1"; newPanel.style.transform="scale(1)"; }, 10);
+        }, 250);
+      }
+
+      renderForm();
+    </script>
+  </body>
+</html>
