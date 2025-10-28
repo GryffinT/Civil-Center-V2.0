@@ -17,15 +17,13 @@
             </h1>
             <div style="width:100vw; padding-bottom:5%; display:flex; justify-content:left; gap:20px;">
                 <button class="fancybtn" onclick="window.location.href='/Login.html'">Signout</button>
-                <button class="fancybtn" onclick="window.location.href='/Mission.html'">My Centers</button>
-                <button class="fancybtn" onclick="window.location.href='/Team.html'">Public Centers</button>
+                <button class="fancybtn" onclick="window.location.href='/Home.html'">Home</button>
                 <button class="fancybtn" onclick="window.location.href='/Team.html'">My Profile</button>
             </div>
             </div>
         </div>
-
-        <div style="width:100%;margin-top:5%; height:20%; background-image: linear-gradient(to bottom, rgb(234, 245, 255), white); text-align:center;">
-            <h1 style="padding-top:150px;">Engage in civil, meaningful dialogue.</h1>
+        <div class="moving-grid" style="width:100%;padding-top: 20%; height:20%;text-align:center;padding-bottom: 300px;">
+            <h1 style="padding-top:5%;">Engage in civil, meaningful dialogue.</h1>
             <p style="padding-top:20px; font-weight:100; margin-left:600px; margin-right:600px;">
             Join a community dedicated to respectful discourse on the issues that matter. Share perspectives, learn from others, and work together towards change.
             </p>
@@ -35,62 +33,132 @@
             </div>
         </div>
 
-        <div class="dark_content" style="margin-top:300px; display:flex; flex-direction:column; align-items:center;">
+        <div class="dark_content" style=" display:flex; flex-direction:column; align-items:center; padding-bottom: 5%;">
             <h1>Your Centers</h1>
             <div id="centers-list" style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-top:20px;"></div>
         </div>
 
-        <script>
-        async function renderUserCenters() {
-        try {
-            const userId = supabase.auth.getSession(); 
-            if (!userId) {
-            document.getElementById("centers-list").innerHTML = "<p>Please log in to see your centers.</p>";
-            return;
-            }
+        <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-            // Call the serverless endpoint
-            const response = await fetch("/api/get-user-centers", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId })
-            });
+        // Initialize Supabase
+        const supabase = createClient(
+            "https://vjnzkzoaxtkqhtsaaxzl.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbnprem9heHRrcWh0c2FheHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTM4NTcsImV4cCI6MjA3NTUyOTg1N30.wG3NTMB1if5AfmqP0Ar8tzznNT8rLuYISlX7qOTwS0o"
+        );
 
-            const data = await response.json();
-            const centersList = document.getElementById("centers-list");
-            centersList.innerHTML = ""; 
-            if (!data.centers || data.centers.length === 0) {
-            centersList.innerHTML = "<p>You have no centers yet.</p>";
-            return;
-            }
-
-            data.centers.forEach(center => {
-            const card = document.createElement("div");
-            card.style.border = "1px solid #ccc";
-            card.style.borderRadius = "12px";
-            card.style.padding = "15px";
-            card.style.width = "250px";
-            card.style.textAlign = "center";
-            card.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
-            card.style.backgroundColor = "#f9f9f9";
-
-            card.innerHTML = `
-                <h3>${center.name}</h3>
-                <p>${center.description || "No description"}</p>
-                <p><strong>Members:</strong> ${center.members || 0}</p>
-            `;
-            centersList.appendChild(card);
-            });
-
-        } catch (err) {
-            console.error(err);
-            document.getElementById("centers-list").innerHTML = "<p>Error loading centers.</p>";
+        async function getSessionUserId() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) return null;
+            return session.user.id;
         }
+
+        // Render centers for the current user
+        async function renderUserCenters() {
+            const centersList = document.getElementById("centers-list");
+            centersList.innerHTML = "<p>Loading centers...</p>";
+
+            const userId = await getSessionUserId();
+            if (!userId) {
+                centersList.innerHTML = "<p>Please log in to see your centers.</p>";
+                return;
+            }
+
+            try {
+                const { data: userCenters, error } = await supabase
+                    .from("center_members")
+                    .select(`
+                        center_id,
+                        centers(name, description, password, members)
+                    `)
+                    .eq("user_id", userId);
+
+                if (error) throw error;
+
+                centersList.innerHTML = "";
+                if (!userCenters || userCenters.length === 0) {
+                    centersList.innerHTML = "<p>You have no centers yet.</p>";
+                    return;
+                }
+
+                // Render each center
+                userCenters.forEach(uc => {
+                    const center = uc.centers;
+                    const card = document.createElement("div");
+                    card.className = "shiny interactive";
+                    card.style.border = "1px solid #ccc";
+                    card.style.borderRadius = "12px";
+                    card.style.padding = "15px";
+                    card.style.width = "250px";
+                    card.style.textAlign = "center";
+                    card.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+                    card.style.backgroundColor = "#f9f9f9";
+                    card.style.margin = "10px";
+                    card.addEventListener("click", () => {
+                        localStorage.setItem("selectedCenterId", uc.center_id);
+                        localStorage.setItem("selectedCenterName", center.name);
+                        localStorage.setItem("selectedCenterDesc", center.description);
+                        localStorage.setItem("selectedCenterMembers", center.members);
+                        window.location.href = "/Center.html";
+                    });
+
+                    card.innerHTML = `
+                        <h3>${center.name}</h3>
+                        <p>${center.description || "No description"}</p>
+                        <p><strong>Password:</strong> ${center.password || "N/A"}</p>
+                        <p><strong>Members:</strong> ${center.members || 0}</p>
+                        <button class="leave-btn" data-center-id="${uc.center_id}">Leave Center</button>
+                    `;
+
+                    centersList.appendChild(card);
+                });
+
+                document.querySelectorAll(".leave-btn").forEach(btn => {
+                    btn.onclick = async () => {
+                        const centerId = btn.dataset.centerId;
+                        await leaveCenter(userId, centerId);
+                    };
+                });
+
+            } catch (err) {
+                console.error("Error loading user centers:", err);
+                centersList.innerHTML = "<p>Error loading centers.</p>";
+            }
+        }
+
+        async function leaveCenter(userId, centerId) {
+            try {
+                const { error } = await supabase
+                    .from("center_members")
+                    .delete()
+                    .eq("user_id", userId)
+                    .eq("center_id", centerId);
+
+                if (error) throw error;
+
+                renderUserCenters();
+            } catch (err) {
+                console.error("Error leaving center:", err);
+                alert("Failed to leave center: " + err.message);
+            }
+        }
+
+        async function setupRealtime() {
+            const userId = await getSessionUserId();
+            if (!userId) return;
+
+            supabase
+                .from(`center_members:user_id=eq.${userId}`)
+                .on("*", payload => {
+                    console.log("Realtime change:", payload);
+                    renderUserCenters();
+                })
+                .subscribe();
         }
 
         renderUserCenters();
+        setupRealtime();
         </script>
-
 
         <div id="create-modal">
             <div class="modal-content">
@@ -115,87 +183,113 @@
             <span id="close-join-modal">&times;</span>
         </div>
         </div>
-    <script>
-    // ---------- Elements ----------
-    const createBtn = document.getElementById("create");
-    const createModal = document.getElementById("create-modal");
-    const closeCreateModal = document.getElementById("close-modal");
-    const createForm = document.getElementById("create-center-form");
+        <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-    const joinBtn = document.getElementById("join");
-    const joinModal = document.getElementById("join-modal");
-    const closeJoinModal = document.getElementById("close-join-modal");
-    const joinForm = document.getElementById("join-center-form");
+        // ---------- Initialize Supabase ----------
+        const supabase = createClient(
+            "https://vjnzkzoaxtkqhtsaaxzl.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbnprem9heHRrcWh0c2FheHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTM4NTcsImV4cCI6MjA3NTUyOTg1N30.wG3NTMB1if5AfmqP0Ar8tzznNT8rLuYISlX7qOTwS0o"
+        );
 
-    // ---------- Create Center Modal ----------
-    createBtn.addEventListener("click", () => createModal.style.display = "flex");
-    closeCreateModal.addEventListener("click", () => createModal.style.display = "none");
-    window.addEventListener("click", e => { if (e.target === createModal) createModal.style.display = "none"; });
+        // ---------- Elements ----------
+        const createBtn = document.getElementById("create");
+        const createModal = document.getElementById("create-modal");
+        const closeCreateModal = document.getElementById("close-modal");
+        const createForm = document.getElementById("create-center-form");
 
-    createForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const data = {
-        name: e.target.name.value,
-        password: e.target.password.value,
-        description: e.target.description.value
-        };
+        const joinBtn = document.getElementById("join");
+        const joinModal = document.getElementById("join-modal");
+        const closeJoinModal = document.getElementById("close-join-modal");
+        const joinForm = document.getElementById("join-center-form");
 
-        try {
-        const res = await fetch("/api/create-center", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+        // ---------- Create Center Modal ----------
+        createBtn.addEventListener("click", () => (createModal.style.display = "flex"));
+        closeCreateModal.addEventListener("click", () => (createModal.style.display = "none"));
+        window.addEventListener("click", (e) => {
+            if (e.target === createModal) createModal.style.display = "none";
         });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.message);
 
-        alert(json.message);
-        createModal.style.display = "none";
-        createForm.reset();
-        } catch (err) {
-        console.error(err);
-        alert("Error creating center: " + err.message);
-        }
-    });
+        createForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-    // ---------- Join Center Modal ----------
-    joinBtn.addEventListener("click", () => joinModal.style.display = "flex");
-    closeJoinModal.addEventListener("click", () => joinModal.style.display = "none");
-    window.addEventListener("click", e => { if (e.target === joinModal) joinModal.style.display = "none"; });
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    joinForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+            if (sessionError || !session) {
+            alert("You must be logged in to create a center.");
+            return;
+            }
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !session) {
+            const userId = session.user.id;
+
+            const data = {
+            userId,
+            name: e.target.name.value.trim(),
+            password: e.target.password.value.trim(),
+            description: e.target.description.value.trim(),
+            };
+
+            try {
+            const res = await fetch("/api/create-center", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data),
+            });
+
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || "Unknown error");
+
+            alert(json.message);
+            createModal.style.display = "none";
+            createForm.reset();
+            } catch (err) {
+            console.error(err);
+            alert("Error creating center: " + err.message);
+            }
+        });
+
+        // ---------- Join Center Modal ----------
+        joinBtn.addEventListener("click", () => (joinModal.style.display = "flex"));
+        closeJoinModal.addEventListener("click", () => (joinModal.style.display = "none"));
+        window.addEventListener("click", (e) => {
+            if (e.target === joinModal) joinModal.style.display = "none";
+        });
+
+        joinForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError || !session) {
             alert("Unable to fetch user session. Please log in.");
             return;
-        }
-        const userId = session.user.id;
+            }
 
-        const data = {
+            const userId = session.user.id;
+
+            const data = {
             userId,
-            password: e.target.password.value // only password now
-        };
+            password: e.target.password.value,
+            };
 
-        try {
+            try {
             const res = await fetch("/api/join-center", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
             });
+
             const json = await res.json();
             if (!res.ok) throw new Error(json.message);
 
             alert(json.message);
             joinModal.style.display = "none";
             joinForm.reset();
-        } catch (err) {
+            } catch (err) {
             console.error(err);
             alert("Error joining center: " + err.message);
-        }
-    });
-
-    </script>
+            }
+        });
+        </script>
     </body>
 </html>

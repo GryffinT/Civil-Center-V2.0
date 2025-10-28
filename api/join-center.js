@@ -9,7 +9,6 @@ export default async function handler(req, res) {
   if (!userId || !password) return res.status(400).json({ message: "Missing userId or password" });
 
   try {
-    // Find center by password
     const { data: center, error: fetchError } = await supabase
       .from("centers")
       .select("*")
@@ -18,18 +17,27 @@ export default async function handler(req, res) {
 
     if (fetchError || !center) return res.status(400).json({ message: "No center found with this password." });
 
-    // Increment member count
-    await supabase
+    const { data: existingMember, error: memberError } = await supabase
+      .from("center_members")
+      .select("*")
+      .eq("center_id", center.id)
+      .eq("user_id", userId)
+      .single();
+
+    if (existingMember) return res.status(400).json({ message: "You are already a member of this center." });
+
+    const { error: updateError } = await supabase
       .from("centers")
       .update({ members: center.members + 1 })
       .eq("id", center.id);
 
-    // Add center ID to user metadata
-    const { data: userData } = await supabase.auth.admin.getUserById(userId);
-    const currentCenters = (userData.user_metadata?.centers) || [];
-    await supabase.auth.admin.updateUserById(userId, {
-      user_metadata: { centers: [...currentCenters, center.id] }
-    });
+    if (updateError) throw updateError;
+
+    const { error: insertMemberError } = await supabase
+      .from("center_members")
+      .insert([{ user_id: userId, center_id: center.id }]);
+
+    if (insertMemberError) throw insertMemberError;
 
     return res.status(200).json({ message: `Successfully joined center "${center.name}"!` });
 
