@@ -40,10 +40,11 @@
             gap: 10px;
             position: relative;
             margin-top: 400px;
+            margin-bottom: 50px;
         " id="formContainer">
         </div>
         
-        <div style="margin-top: 100px";>
+        <div>
             <div style="width: 100vw;">
                 <!-- Posts Container -->
                 <div id="postsContainer" style="
@@ -55,6 +56,7 @@
                     gap: 15px;
                 ">
                 </div>
+                
             </div>
         </div>
     </div>
@@ -80,7 +82,7 @@
 
             // Render form content
             const formContent = document.createElement("div");
-            formContent.style = "display:flex; flex-direction:column; gap:10px; width:100%";
+            formContent.style = "display:flex; flex-direction:column; gap:10px; width:100%; margin-bottom:20px;";
             formContent.innerHTML = `
                 <h2 style="margin: 0;">
                     ${centerName} 
@@ -184,7 +186,7 @@
                     padding: 20px;
                     display: flex;
                     flex-direction: column;
-                    margin: 20px auto;
+                    margin-bottom:50px;
                     gap: 10px;
                 `;
                 card.innerHTML = `
