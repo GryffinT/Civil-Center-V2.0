@@ -1,212 +1,275 @@
 <!DOCTYPE html>
 <html lang="en" style="overflow-x:hidden;">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Civil Center</title>
-    <link rel="stylesheet" href="/styles.css"> 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Center</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body class="site-background" style="width: 100vw;">
-
-    <!-- Navigation Bar -->
-    <div class="nav-bar">
-        <div class="indented">
-            <h1 style="margin-top:1%; font-size:50px; margin-bottom:5px;">
-                <span class="top-bar-span">
-                    <strong>Civil<strong><sub>Center</sub></strong>
-                </span>
-            </h1>
-            <div style="width:100vw; padding-bottom:5%; display:flex; justify-content:left; gap:20px;">
-                <button class="fancybtn" onclick="window.location.href='/Login.html'">Signout</button>
-                <button class="fancybtn" onclick="window.location.href='/Home.html'">Home</button>
-                <button class="fancybtn" onclick="window.location.href='/Team.html'">Profile</button>
-            </div>
-        </div>
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <div class="indented">
+      <h1 style="margin-top:1%; font-size:50px; margin-bottom:5px;">
+        <span class="top-bar-span">
+          <strong>Civil<strong><sub>Center</sub></strong>
+        </span>
+      </h1>
+      <div style="width:100vw; padding-bottom:5%; display:flex; justify-content:left; gap:20px;">
+        <button class="fancybtn" onclick="window.location.href='/Login.html'">Signout</button>
+        <button class="fancybtn" onclick="window.location.href='/Home.html'">Home</button>
+      </div>
     </div>
+  </div>
 
-    <div style="height: 500px; width: 100%">
-
+  <div style="height: 500px; width: 100%">
     <div id="mainContent" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
 
-        <!-- Form Container -->
-        <div style="
-            border: 1px solid rgb(243, 243, 243);
-            box-shadow: 0 5px 8px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 8000px;    
-            border-radius: 2%;
-            padding: 20px;
+      <!-- Form Container -->
+      <div
+        id="formContainer"
+        style="
+          border: 1px solid rgb(243, 243, 243);
+          box-shadow: 0 5px 8px rgba(0,0,0,0.1);
+          width: 90%;
+          max-width: 8000px;
+          border-radius: 2%;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          position: relative;
+        ">
+      </div>
+
+      <div style="width: 100vw;">
+        <!-- Posts Container -->
+        <div
+          id="postsContainer"
+          style="
+            width: 100%;
+            max-width: 80000px;
+            margin: 20px auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            position: relative;
-        " id="formContainer">
+            gap: 15px;
+          ">
         </div>
-
-        <div style="width: 100vw;">
-
-            <!-- Posts Container -->
-            <div id="postsContainer" style="
-                width: 100%;
-                max-width: 80000px;
-                margin: 20px auto;
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            ">
-            </div>
-
-        </div>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Initialize Supabase
-        const supabase = window.supabase.createClient(
-            "https://vjnzkzoaxtkqhtsaaxzl.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbnprem9heHRrcWh0c2FheHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTM4NTcsImV4cCI6MjA3NTUyOTg1N30.wG3NTMB1if5AfmqP0Ar8tzznNT8rLuYISlX7qOTwS0o"
-        );
+  <script>
+    // Initialize Supabase
+    const supabase = window.supabase.createClient(
+      "https://vjnzkzoaxtkqhtsaaxzl.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqbnprem9heHRrcWh0c2FheHpsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NTM4NTcsImV4cCI6MjA3NTUyOTg1N30.wG3NTMB1if5AfmqP0Ar8tzznNT8rLuYISlX7qOTwS0o"
+    );
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            const centerId = localStorage.getItem("selectedCenterId");
-            if (!centerId) return;
+    document.addEventListener("DOMContentLoaded", async () => {
+      const centerId = localStorage.getItem("selectedCenterId");
+      if (!centerId) return;
 
-            const centerName = localStorage.getItem("selectedCenterName");
-            const centerDesc = localStorage.getItem("selectedCenterDesc");
-            const centerMembers = localStorage.getItem("selectedCenterMembers");
-            const username = localStorage.getItem("userDisplayName");
+      const centerName = localStorage.getItem("selectedCenterName");
+      const centerDesc = localStorage.getItem("selectedCenterDesc");
+      const centerMembers = localStorage.getItem("selectedCenterMembers");
+      const username = localStorage.getItem("userDisplayName");
 
-            const formContainer = document.getElementById("formContainer");
-            const postsContainer = document.getElementById("postsContainer");
+      const formContainer = document.getElementById("formContainer");
+      const postsContainer = document.getElementById("postsContainer");
 
-            // Render form content
-            const formContent = document.createElement("div");
-            formContent.style = "display:flex; flex-direction:column; gap:10px; width:100%";
-            formContent.innerHTML = `
-                <h2 style="margin: 0;">
-                    ${centerName} 
-                    <span style="margin-left: 20px; font-weight: 100; font-size: 15px;">${centerMembers} Members</span>
-                </h2>
-                <p style="margin: 0; font-weight: 100;">${centerDesc}</p>
-                <hr style="border:1px solid black; width:100%; margin: 10px 0;" />
-                <h2 style="margin-top:-.25%;">Make a post</h2>
-                <div style="width:100%; margin-top:-1%;">
-                    <input placeholder="Post title." style="margin-bottom: 1%; width:100%; padding:8px; box-sizing:border-box;"></input>
-                    <textarea 
-                        name="body" 
-                        placeholder="What's on your mind?" 
-                        rows="4"
-                        style="padding:8px; border:1px solid #ccc; border-radius:4px; width:100%; box-sizing: border-box; resize: vertical;"
-                    ></textarea>
-                    <span>Post Anonymously</span>
-                    <label class="switch" style="display:flex; align-items:center; gap:10px; margin-top:5px;">
-                        <input type="checkbox" id="myToggle">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <button class="shiny interactive" style="background-color: black; color:white; width: 100px; margin-top: 10px;">Post</button>
-            `;
-            formContainer.appendChild(formContent);
+      // --- Render form ---
+      const formContent = document.createElement("div");
+      formContent.style = "display:flex; flex-direction:column; gap:10px; width:100%";
+      formContent.innerHTML = `
+        <h2 style="margin: 0;">
+          ${centerName}
+          <span style="margin-left: 20px; font-weight: 100; font-size: 15px;">${centerMembers} Members</span>
+        </h2>
+        <p style="margin: 0; font-weight: 100;">${centerDesc}</p>
+        <hr style="border:1px solid black; width:100%; margin: 10px 0;" />
+        <h2 style="margin-top:-.25%;">Make a post</h2>
+        <div style="width:100%; margin-top:-1%;">
+          <input placeholder="Post title." style="margin-bottom: 1%; width:100%; padding:8px; box-sizing:border-box;">
+          <textarea
+            name="body"
+            placeholder="What's on your mind?"
+            rows="4"
+            style="padding:8px; border:1px solid #ccc; border-radius:4px; width:100%; box-sizing:border-box; resize:vertical;">
+          </textarea>
+          <span>Post Anonymously</span>
+          <label class="switch" style="display:flex; align-items:center; gap:10px; margin-top:5px;">
+            <input type="checkbox" id="myToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button class="shiny interactive" style="background-color:black;color:white;width:100px;margin-top:10px;">Post</button>
+      `;
+      formContainer.appendChild(formContent);
 
-            // Post submission
-            const postButton = formContent.querySelector("button.shiny.interactive");
-            postButton.addEventListener("click", async () => {
-                const title = formContent.querySelector("input").value;
-                const body = formContent.querySelector("textarea").value;
-                const anonymous = formContent.querySelector("#myToggle").checked;
+      // --- Handle Post Submission ---
+      const postButton = formContent.querySelector("button.shiny.interactive");
+      postButton.addEventListener("click", async () => {
+        const title = formContent.querySelector("input").value.trim();
+        const body = formContent.querySelector("textarea").value.trim();
+        const anonymous = formContent.querySelector("#myToggle").checked;
 
-                let userName;
+        if (!title || !body) return alert("Please enter a title and body.");
 
-                if (anonymous) {
-                    userName = "Anonymous";
-                } else {
-                    const { data: { session }, error } = await supabase.auth.getSession();
-                    if (error) {
-                        console.error("Error fetching session:", error);
-                        userName = "Unknown";
-                    } else {
-                        userName = username || "Unknown";
-                    }
-                }
+        let userName = anonymous ? "Anonymous" : (username || "Unknown");
 
-                try {
-                    const { data, error } = await supabase
-                        .from("center_posts")
-                        .insert([{ center_id: centerId, user: userName, title, content: body }])
-                        .select()
-                        .single();
+        try {
+          const { data, error } = await supabase
+            .from("center_posts")
+            .insert([{ center_id: centerId, user: userName, title, content: body }])
+            .select()
+            .single();
 
-                    if (error) throw error;
+          if (error) throw error;
 
-                    alert("Post submitted successfully!");
-                    formContent.querySelector("input").value = "";
-                    formContent.querySelector("textarea").value = "";
-                    formContent.querySelector("#myToggle").checked = false;
+          alert("Post submitted successfully!");
+          formContent.querySelector("input").value = "";
+          formContent.querySelector("textarea").value = "";
+          formContent.querySelector("#myToggle").checked = false;
 
-                    // Instead of re-rendering all posts, just prepend the new one:
-                    prependPost(data);
+          prependPost(data);
+        } catch (err) {
+          console.error(err);
+          alert("Failed to submit post!");
+        }
+      });
 
-                } catch (err) {
-                    console.error(err);
-                    alert("Failed to submit post!");
-                }
-            });
+      // --- Render Posts on Load ---
+      async function renderPosts() {
+        try {
+          const { data: posts, error } = await supabase
+            .from("center_posts")
+            .select("id, user, title, content, pledges, agree")
+            .eq("center_id", centerId)
+            .order("id", { ascending: false });
 
-            // Render all posts on load
-            async function renderPosts() {
-                try {
-                    const { data: posts, error } = await supabase
-                        .from("center_posts")
-                        .select("id, user, title, content")
-                        .eq("center_id", centerId)
-                        .order("id", { ascending: false });
+          if (error) throw error;
 
-                    if (error) throw error;
+          postsContainer.innerHTML = "";
+          posts.forEach(prependPost);
+        } catch (err) {
+          console.error("Error fetching posts:", err);
+        }
+      }
 
-                    postsContainer.innerHTML = "";
+      function prependPost(post) {
+        const card = document.createElement("div");
+        card.className = "post-card";
+        card.dataset.postId = post.id;
 
-                    posts.forEach(prependPost);
+        card.style.cssText = `
+          border: 1px solid rgb(243, 243, 243);
+          box-shadow: 0 5px 8px rgba(0,0,0,0.1);
+          width: 90%;
+          max-width: 5000px;
+          border-radius: 2%;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          margin: 20px auto;
+          gap: 10px;
+          background-color: white;
+        `;
 
-                } catch (err) {
-                    console.error("Error fetching posts:", err);
-                }
-            }
+        const pledges = post.pledges || [];
+        const agrees = post.agree || [];
 
-            // Helper function to prepend a single post
-            function prependPost(post) {
-                const card = document.createElement("div");
-                card.className = "post-card";
-                card.style = `
-                    border: 1px solid rgb(243, 243, 243);
-                    box-shadow: 0 5px 8px rgba(0,0,0,0.1);
-                    width: 90%;
-                    max-width: 5000px;    
-                    border-radius: 2%;
-                    padding: 20px;
-                    display: flex;
-                    flex-direction: column;
-                    margin: 20px auto;
-                    gap: 10px;
-                `;
-                card.innerHTML = `
-                    <h1 style="margin:0;overflow-wrap: break-word;">${post.title}</h1>
-                    <h2 style="margin:0; font-size:0.9em; color:#555;overflow-wrap: break-word;">By ${post.user}</h2>
-                    <p style="margin-top:6px;overflow-wrap: break-word;">${post.content}</p>
-                    <hr style="border:1px solid black; width:100%; margin-top: 6px;" />
-                    <span style="display: flex; justify-content: left; gap: 1%;">
-                    <button class="shiny interactive" style="background-color: black; width: 10%;">Pledge</button>
-                    <button class="shiny interactive" style="background-color: black; width: 10%;">Agree</button>
-                    </span>
+        card.innerHTML = `
+          <h1 style="margin:0;overflow-wrap:break-word;">${post.title}</h1>
+          <h2 style="margin:0;font-size:0.9em;color:#555;overflow-wrap:break-word;">By ${post.user}</h2>
+          <p style="margin-top:6px;overflow-wrap:break-word;">${post.content}</p>
+          <hr style="border:1px solid black;width:100%;margin-top:6px;" />
+          <div style="display:flex;gap:10px;margin-bottom:5px;">
+            <button class="pledge-btn shiny interactive" style="background-color:black;color:white;width:10%;">Pledge</button>
+            <button class="agree-btn shiny interactive" style="background-color:black;color:white;width:10%;">Agree</button>
+          </div>
+          <p class="agree-count">${agrees.length} people agree.</p>
+          <p class="pledge-display">${formatPledges(pledges)}</p>
+        `;
 
+        postsContainer.prepend(card);
 
-                `;
-                postsContainer.prepend(card);
-            }
+        // Attach logic to each button
+        const pledgeBtn = card.querySelector(".pledge-btn");
+        const agreeBtn = card.querySelector(".agree-btn");
+        const agreeCount = card.querySelector(".agree-count");
+        const pledgeDisplay = card.querySelector(".pledge-display");
 
-            renderPosts();
+        pledgeBtn.addEventListener("click", async () => {
+          const username = localStorage.getItem("userDisplayName");
+          if (!username) return alert("You must be logged in.");
+
+          const postId = card.dataset.postId;
+          const { data, error } = await supabase
+            .from("center_posts")
+            .select("pledges")
+            .eq("id", postId)
+            .single();
+
+          if (error) return console.error(error);
+
+          let pledges = data.pledges || [];
+          if (!pledges.includes(username)) pledges.push(username);
+
+          const { error: updateError } = await supabase
+            .from("center_posts")
+            .update({ pledges })
+            .eq("id", postId);
+
+          if (updateError) return console.error(updateError);
+
+          pledgeDisplay.textContent = formatPledges(pledges);
         });
-    </script>
-    </div>
+
+        agreeBtn.addEventListener("click", async () => {
+          const username = localStorage.getItem("userDisplayName");
+          if (!username) return alert("You must be logged in.");
+
+          const postId = card.dataset.postId;
+          const { data, error } = await supabase
+            .from("center_posts")
+            .select("agree")
+            .eq("id", postId)
+            .single();
+
+          if (error) return console.error(error);
+
+          let agree = data.agree || [];
+          if (agree.includes(username)) {
+            agree = agree.filter(u => u !== username);
+          } else {
+            agree.push(username);
+          }
+
+          const { error: updateError } = await supabase
+            .from("center_posts")
+            .update({ agree })
+            .eq("id", postId);
+
+          if (updateError) return console.error(updateError);
+
+          agreeCount.textContent = `${agree.length} people agree.`;
+        });
+      }
+
+      function formatPledges(list) {
+        if (!list || list.length === 0) return "Nobody pledged yet.";
+        if (list.length === 1) return `${list[0]} is pledged to this cause.`;
+        if (list.length === 2) return `${list[0]} and ${list[1]} are pledged to this cause.`;
+        return `${list[0]}, ${list[1]}, and ${list.length - 2} more are pledged to this cause.`;
+      }
+
+      // Initial render
+      renderPosts();
+    });
+  </script>
 </body>
 </html>
